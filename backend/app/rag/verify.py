@@ -79,8 +79,8 @@ def _find_contradictions(clauses: list[ScoredClause]) -> list[ScoredClause]:
         for j in range(i + 1, len(clauses)):
             if _is_conditional(clauses[i].text) or _is_conditional(clauses[j].text):
                 continue
-            a_terms = _tokenize(clauses[i].text + " " + clauses[i].section)
-            b_terms = _tokenize(clauses[j].text + " " + clauses[j].section)
+            a_terms = _tokenize(clauses[i].text)
+            b_terms = _tokenize(clauses[j].text)
             shared = a_terms & b_terms
             if not shared:
                 continue

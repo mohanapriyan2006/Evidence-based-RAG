@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "type": "direct",
+    "question": "Who is eligible for the Household Support Program?",
+    "expected": "answered",
+    "expected_sources": ["§2.1.1"]
+  },
+  {
+    "id": 2,
+    "type": "direct",
+    "question": "How is countable income defined?",
+    "expected": "answered",
+    "expected_sources": ["§1.4.7"]
+  },
+  {
+    "id": 3,
+    "type": "multi-clause",
+    "question": "How is income counted and what is disregarded?",
+    "expected": "answered",
+    "expected_sources": ["§6.2.1", "§6.4.1"]
+  },
+  {
+    "id": 4,
+    "type": "multi-clause",
+    "question": "What are the time limits for making and determining an application?",
+    "expected": "answered",
+    "expected_sources": ["§8.3.1", "§8.3.2"]
+  },
+  {
+    "id": 5,
+    "type": "paraphrased",
+    "question": "What basic conditions must a person meet to qualify for assistance?",
+    "expected": "answered",
+    "expected_sources": ["§2.1.1"]
+  },
+  {
+    "id": 6,
+    "type": "unanswerable",
+    "question": "What is the department's phone number?",
+    "expected": "refused",
+    "expected_sources": []
+  },
+  {
+    "id": 7,
+    "type": "evidence-gap",
+    "question": "Can a full-time student receive the award?",
+    "expected": "refused",
+    "expected_sources": []
+  },
+  {
+    "id": 8,
+    "type": "contradiction",
+    "question": "overpayment time years",
+    "expected": "conflict",
+    "expected_sources": ["§9.5.1", "§9.5.2"]
+  },
+  {
+    "id": 9,
+    "type": "edge-case",
+    "question": "Can an overpayment be recovered after six years?",
+    "expected": "conflict",
+    "expected_sources": ["§9.5.1", "§9.5.2"]
+  },
+  {
+    "id": 10,
+    "type": "ambiguous",
+    "question": "Tell me about the program.",
+    "expected": "refused",
+    "expected_sources": []
+  }
+]
