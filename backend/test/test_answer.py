@@ -1,7 +1,7 @@
 import unittest
 
 from app.rag.ingest import DEFAULT_MANUAL, parse_policy_manual
-from app.rag.answer import CONFLICT_ANSWER, REFUSAL_INSUFFICIENT, REFUSAL_NONE, generate_answer
+from app.rag.answer import CONFLICT_ANSWER, REFUSAL_INSUFFICIENT, REFUSAL_NONE, _clean_think_tags, generate_answer
 from app.rag.citations import build_citations
 from app.rag.retrieve import ScoredClause, retrieve
 from app.rag.verify import VerificationResult, verify
@@ -11,6 +11,27 @@ class AnswerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.clauses = parse_policy_manual(DEFAULT_MANUAL)
+
+    def test_clean_think_tags(self):
+        self.assertIsNone(_clean_think_tags(None))
+        self.assertIsNone(_clean_think_tags(""))
+        self.assertEqual(
+            _clean_think_tags("<think>Reasoning step 1\nStep 2</think>Actual answer"),
+            "Actual answer",
+        )
+        self.assertEqual(
+            _clean_think_tags("<think>Reasoning</think>\n  Final answer  "),
+            "Final answer",
+        )
+        self.assertEqual(
+            _clean_think_tags("Answer text <think/>"),
+            "Answer text",
+        )
+        self.assertEqual(
+            _clean_think_tags("Answer text </think>"),
+            "Answer text",
+        )
+        self.assertIsNone(_clean_think_tags("<think>Only thinking without answer"))
 
     def test_answered_question(self):
         q = "Who is eligible for the program?"

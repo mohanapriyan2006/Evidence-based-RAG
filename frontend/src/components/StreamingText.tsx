@@ -191,9 +191,7 @@ export default function StreamingText({
     window.setTimeout(() => setCopied(false), 1400);
   }
 
-  // Parse text for citations like [scoopdata.io] or [1] or [Section 2.1]
   const renderFormattedText = (rawText: string) => {
-    // Regex matches pattern [something]
     const parts = rawText.split(/(\[[^\]]+\])/g);
     return parts.map((part, idx) => {
       if (part.startsWith("[") && part.endsWith("]")) {
@@ -205,8 +203,8 @@ export default function StreamingText({
             className="inline-citation-badge"
             title={`View evidence source: ${citationLabel}`}
           >
-            <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-[9px]">
-              🍃
+            <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-[9px] font-mono">
+              §
             </span>
             <span>{citationLabel}</span>
           </span>
@@ -219,7 +217,7 @@ export default function StreamingText({
   return (
     <article className={`grounded-fade-in ${fill ? "w-full" : "w-full max-w-3xl"}`}>
       <div className="group">
-        {/* Assistant Header & Status Badge */}
+        {/* Assistant header & Statusbadge */}
         <div className="mb-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 font-mono text-[11px] font-bold text-black shadow-md shadow-emerald-500/10">
@@ -230,7 +228,7 @@ export default function StreamingText({
             </span>
           </div>
 
-          {/* Status Badge */}
+          {/* Status badge */}
           {!loading && status && (
             <div className="flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium backdrop-blur-md">
               {status === "answered" && (
@@ -252,7 +250,7 @@ export default function StreamingText({
           )}
         </div>
 
-        {/* Message Content */}
+        {/* Message content */}
         <div className="max-w-3xl text-[16px] leading-7 font-normal text-white/90 tracking-wide">
           {loading ? (
             <div className="flex items-center gap-2 py-3 text-white/50 text-sm">
@@ -273,13 +271,13 @@ export default function StreamingText({
           )}
         </div>
 
-        {/* Action Bar from Image 1 */}
+        {/* Action bar*/}
         <div
           className={`mt-4 flex flex-wrap items-center gap-1.5 transition-all duration-200 ${
             done ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
-          {/* Copy Button */}
+          {/* Copy btn */}
           <button
             type="button"
             onClick={copyAnswer}
@@ -290,7 +288,7 @@ export default function StreamingText({
             {copied ? <Icon name="check" size={15} /> : <Icon name="copy" size={15} />}
           </button>
 
-          {/* Regenerate Button */}
+          {/* Regenerate btn */}
           <button
             type="button"
             onClick={onRegenerate}
@@ -301,44 +299,13 @@ export default function StreamingText({
             <Icon name="refresh" size={15} />
           </button>
 
-          {/* Thumbs Up Button */}
-          <button
-            type="button"
-            onClick={() => setFeedback(feedback === "up" ? null : "up")}
-            aria-label="Helpful"
-            title="Helpful"
-            className={`flex size-8 items-center justify-center rounded-lg border transition ${
-              feedback === "up"
-                ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-400"
-                : "border-transparent text-white/40 hover:border-white/10 hover:bg-white/[0.06] hover:text-white/90"
-            }`}
-          >
-            <Icon name="up" size={15} />
-          </button>
-
-          {/* Thumbs Down Button */}
-          <button
-            type="button"
-            onClick={() => setFeedback(feedback === "down" ? null : "down")}
-            aria-label="Not helpful"
-            title="Not helpful"
-            className={`flex size-8 items-center justify-center rounded-lg border transition ${
-              feedback === "down"
-                ? "border-rose-500/40 bg-rose-500/15 text-rose-400"
-                : "border-transparent text-white/40 hover:border-white/10 hover:bg-white/[0.06] hover:text-white/90"
-            }`}
-          >
-            <Icon name="down" size={15} />
-          </button>
-
-          {/* Overlapping Sources Button (Exact Match from Image 1) */}
+          {/* Overlapping sources */}
           {sources.length > 0 && (
             <button
               type="button"
               onClick={() => setSourcesOpen((prev) => !prev)}
               className="ml-2 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/70 shadow-sm transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
             >
-              {/* Overlapping Avatars */}
               <span className="flex -space-x-1.5">
                 {sources.slice(0, 3).map((source, i) => (
                   <span
@@ -361,7 +328,7 @@ export default function StreamingText({
           {copied && <span className="ml-2 text-xs font-medium text-emerald-400">Copied!</span>}
         </div>
 
-        {/* Collapsible Source Evidence Drawer */}
+        {/* Source evidence */}
         {sourcesOpen && done && sources.length > 0 && (
           <div className="mt-3.5 max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#1c1c1e]/90 p-1 shadow-2xl backdrop-blur-md">
             <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
@@ -384,7 +351,7 @@ export default function StreamingText({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="flex size-5 items-center justify-center rounded bg-emerald-500/20 text-[10px] font-mono font-bold text-emerald-400">
+                      <span className="flex size-10 px-8 items-center justify-center rounded bg-emerald-500/20 text-[14px] font-mono font-bold text-emerald-400">
                         {source.id || idx + 1}
                       </span>
                       <span className="text-xs font-semibold text-white/90">
@@ -408,7 +375,7 @@ export default function StreamingText({
           </div>
         )}
 
-        {/* Follow-ups Section from Image 1 */}
+        {/* Followups section  */}
         {done && followUps && followUps.length > 0 && (
           <div className="mt-6 border-t border-white/[0.06] pt-4">
             <h4 className="mb-2.5 text-xs font-medium text-white/40 tracking-wide">

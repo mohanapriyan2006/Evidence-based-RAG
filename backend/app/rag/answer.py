@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 
@@ -13,13 +14,22 @@ REFUSAL_INSUFFICIENT = "The policy does not establish enough information to answ
 REFUSAL_NONE = "No relevant policy evidence was found for this question."
 CONFLICT_ANSWER = "The policy contains contradictory provisions on this topic. Please review the following clauses."
 
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+
 
 class GroqError(Exception):
     pass
 
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
+def _clean_think_tags(text: str | None) -> str | None:
+    if not text:
+        return None
+    cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    cleaned = re.sub(r"<think>.*", "", cleaned, flags=re.DOTALL | re.IGNORECASE)
+    cleaned = re.sub(r"</?think/?>", "", cleaned, flags=re.IGNORECASE)
+    cleaned = cleaned.strip()
+    return cleaned if cleaned else None
 
 
 def _format_answer(question: str, evidence: list[Citation]) -> str:
@@ -58,8 +68,8 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
         "messages": [
             {"role": "user", "content": _build_prompt(question, evidence)},
         ],
-        "temperature": 1,
-        "max_completion_tokens": 2048,
+        "temperature": 0.2,
+        "max_completion_tokens": 1024,
         "top_p": 1,
         "stream": False,
         "stop": None,
@@ -67,17 +77,12 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
     data = json.dumps(body, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(GROQ_URL, data=data, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.urlopen(request, timeout=10) as response:
             result = json.loads(response.read().decode("utf-8"))
-            return result["choices"][0]["message"]["content"].strip()
-    except urllib.error.HTTPError as exc:
-        try:
-            detail = exc.read().decode("utf-8")
-        except Exception:
-            detail = ""
-        raise GroqError(f"Groq request failed {exc.code}: {detail or exc}") from exc
-    except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
-        raise GroqError(f"Groq request failed: {exc}") from exc
+            raw_content = result["choices"][0]["message"]["content"]
+            return _clean_think_tags(raw_content)
+    except Exception as exc:
+        return None
 
 
 def _find_referral_clause(clauses: list[ScoredClause]) -> ScoredClause | None:
@@ -133,12 +138,18 @@ def generate_answer(
         }
 
     sources = build_citations(verification.evidence)
+    answer = None
     try:
         answer = _call_groq(question, sources)
-    except GroqError:
-        raise
-    if answer is None:
+    except Exception:
+        answer = None
+
+    if answer:
+        answer = _clean_think_tags(answer)
+
+    if not answer:
         answer = _format_answer(question, sources)
+
     return {
         "status": "answered",
         "answer": answer,

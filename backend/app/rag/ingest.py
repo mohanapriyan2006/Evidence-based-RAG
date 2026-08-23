@@ -17,13 +17,20 @@ _PART_RE = re.compile(r"^# Part (\d+) — (.+)$")
 _SECTION_RE = re.compile(r"^## (\d+\.\d+) (.+)$")
 _CLAUSE_RE = re.compile(r"^\*\*(\d+(?:\.\d+)+)(?:\s+([^*]+))?\*\*\s*(.*)$")
 
-DEFAULT_MANUAL = (
-    Path(__file__).resolve().parents[4]
-    / "PackageByCompany"
-    / "1"
-    / "Data pack"
-    / "policy-manual.md"
-)
+
+def _find_default_manual() -> Path:
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        candidate = parent / "data" / "policy-manual.md"
+        if candidate.exists():
+            return candidate
+        candidate2 = parent / "grounded-answer" / "data" / "policy-manual.md"
+        if candidate2.exists():
+            return candidate2
+    return current.parents[3] / "data" / "policy-manual.md"
+
+
+DEFAULT_MANUAL = _find_default_manual()
 
 
 def _clean(lines: list[str]) -> str:
@@ -92,14 +99,3 @@ def parse_policy_manual(path: Path) -> list[Clause]:
     flush()
 
     return clauses
-
-
-if __name__ == "__main__":
-    clauses = parse_policy_manual(DEFAULT_MANUAL)
-    print(f"Total clauses: {len(clauses)}")
-    print()
-    for clause in clauses:
-        preview = clause.text[:200]
-        if len(clause.text) > 200:
-            preview = f"{preview}..."
-        print(f"{clause.id}\n{preview}\n")
