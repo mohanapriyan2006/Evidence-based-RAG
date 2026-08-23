@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import json
+import os
+import urllib.error
+import urllib.request
+
 from app.rag.citations import Citation, build_citations
 from app.rag.retrieve import ScoredClause
 from app.rag.verify import VerificationResult
@@ -9,11 +14,54 @@ REFUSAL_NONE = "No relevant policy evidence was found for this question."
 CONFLICT_ANSWER = "The policy contains contradictory provisions on this topic. Please review the following clauses."
 
 
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
+
+
 def _format_answer(question: str, evidence: list[Citation]) -> str:
     if not evidence:
         return "No relevant policy evidence was found."
     parts = [f"Based on {c.id}, {c.text}" for c in evidence]
     return " ".join(parts)
+
+
+def _build_prompt(question: str, evidence: list[Citation]) -> str:
+    lines = ["Question:", question, "", "Verified policy evidence:"]
+    for c in evidence:
+        lines.append(f"{c.id}: {c.text}")
+    lines.append("")
+    lines.append("Answer the question using only the provided policy evidence.")
+    lines.append("Do not use outside knowledge.")
+    lines.append("Do not invent missing information.")
+    lines.append("Do not create or modify policy citations.")
+    lines.append("If the evidence does not support a statement, leave it out.")
+    return "\n".join(lines)
+
+
+def _call_groq(question: str, evidence: list[Citation]) -> str | None:
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        return None
+    model = os.environ.get("GROQ_MODEL") or DEFAULT_GROQ_MODEL
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    body = {
+        "model": model,
+        "messages": [
+            {"role": "user", "content": _build_prompt(question, evidence)},
+        ],
+        "temperature": 0.0,
+    }
+    data = json.dumps(body).encode("utf-8")
+    request = urllib.request.Request(GROQ_URL, data=data, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            return result["choices"][0]["message"]["content"].strip()
+    except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, TimeoutError, json.JSONDecodeError):
+        return None
 
 
 def _find_referral_clause(clauses: list[ScoredClause]) -> ScoredClause | None:
@@ -69,7 +117,9 @@ def generate_answer(
         }
 
     sources = build_citations(verification.evidence)
-    answer = _format_answer(question, sources)
+    answer = _call_groq(question, sources)
+    if answer is None:
+        answer = _format_answer(question, sources)
     return {
         "status": "answered",
         "answer": answer,

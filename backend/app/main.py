@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from app.rag.ingest import DEFAULT_MANUAL, parse_policy_manual
 from app.rag.answer import generate_answer
 from app.rag.retrieve import retrieve
