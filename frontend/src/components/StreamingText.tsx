@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import MarkdownText from "./MarkdownText";
 import "./grounded-answer.css";
 
 export type SourceItem = {
@@ -264,8 +265,12 @@ export default function StreamingText({
               <span className="text-xs font-mono text-white/40">Searching policy manual & generating grounded evidence...</span>
             </div>
           ) : (
-            <div className="whitespace-pre-wrap">
-              {renderFormattedText(shownText)}
+            <div className="relative">
+              <MarkdownText
+                content={shownText}
+                onSelectClause={onSelectClause}
+                onOpenSources={() => setSourcesOpen(true)}
+              />
               {!done && (
                 <span className="ml-1 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-emerald-400" />
               )}
