@@ -14,6 +14,10 @@ REFUSAL_NONE = "No relevant policy evidence was found for this question."
 CONFLICT_ANSWER = "The policy contains contradictory provisions on this topic. Please review the following clauses."
 
 
+class GroqError(Exception):
+    pass
+
+
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
 
@@ -60,8 +64,8 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
         with urllib.request.urlopen(request, timeout=30) as response:
             result = json.loads(response.read().decode("utf-8"))
             return result["choices"][0]["message"]["content"].strip()
-    except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, TimeoutError, json.JSONDecodeError):
-        return None
+    except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
+        raise GroqError(f"Groq request failed: {exc}") from exc
 
 
 def _find_referral_clause(clauses: list[ScoredClause]) -> ScoredClause | None:
@@ -117,7 +121,10 @@ def generate_answer(
         }
 
     sources = build_citations(verification.evidence)
-    answer = _call_groq(question, sources)
+    try:
+        answer = _call_groq(question, sources)
+    except GroqError:
+        raise
     if answer is None:
         answer = _format_answer(question, sources)
     return {
