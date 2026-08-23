@@ -50,21 +50,33 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "grounded-answer/1.0",
     }
     body = {
         "model": model,
         "messages": [
             {"role": "user", "content": _build_prompt(question, evidence)},
         ],
-        "temperature": 0.0,
+        "temperature": 1,
+        "max_completion_tokens": 2048,
+        "top_p": 1,
+        "stream": False,
+        "stop": None,
     }
-    data = json.dumps(body).encode("utf-8")
+    data = json.dumps(body, ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(GROQ_URL, data=data, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             result = json.loads(response.read().decode("utf-8"))
             return result["choices"][0]["message"]["content"].strip()
-    except (urllib.error.URLError, urllib.error.HTTPError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
+    except urllib.error.HTTPError as exc:
+        try:
+            detail = exc.read().decode("utf-8")
+        except Exception:
+            detail = ""
+        raise GroqError(f"Groq request failed {exc.code}: {detail or exc}") from exc
+    except (urllib.error.URLError, KeyError, IndexError, TimeoutError, json.JSONDecodeError) as exc:
         raise GroqError(f"Groq request failed: {exc}") from exc
 
 
