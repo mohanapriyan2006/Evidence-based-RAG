@@ -27,3 +27,11 @@ export interface QuickAction {
   icon: React.ReactNode;
 }
 
+export interface ClauseDetail {
+  id: string;
+  part: string;
+  section: string;
+  text: string;
+}
+
+

@@ -3,6 +3,7 @@ import { askQuestion } from "./api/client";
 import { Message, QuickAction } from "./types";
 import ChatView from "./components/ChatView";
 import ChatInput from "./components/ChatInput";
+import ClauseModal from "./components/ClauseModal";
 
 const STARTER_QUESTIONS = [
   "Who is eligible for the program?",
@@ -86,6 +87,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedClauseId, setSelectedClauseId] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -185,6 +187,7 @@ export default function App() {
         loading={loading}
         starterQuestions={STARTER_QUESTIONS}
         onSubmitQuestion={submitQuestion}
+        onSelectClause={(id) => setSelectedClauseId(id)}
         bottomRef={bottomRef}
       />
 
@@ -197,6 +200,13 @@ export default function App() {
         quickActions={QUICK_ACTIONS}
         textareaRef={textareaRef}
       />
+
+      {/* Clause Evidence Modal */}
+      <ClauseModal
+        clauseId={selectedClauseId}
+        onClose={() => setSelectedClauseId(null)}
+      />
     </div>
   );
 }
+

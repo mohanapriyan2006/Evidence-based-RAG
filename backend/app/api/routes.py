@@ -16,6 +16,15 @@ def health():
     return {"status": "ok"}
 
 
+@router.get("/sources/{clause_id}")
+def get_source(clause_id: str):
+    cid = clause_id if clause_id.startswith("§") else f"§{clause_id}"
+    clause = next((c for c in CLAUSES if c.id == cid), None)
+    if not clause:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clause not found")
+    return clause
+
+
 @router.post("/ask", response_model=AskResponse)
 def ask(request: QuestionRequest):
     question = request.question.strip()
@@ -34,3 +43,4 @@ def ask(request: QuestionRequest):
         answer=result["answer"],
         sources=result["sources"],
     )
+

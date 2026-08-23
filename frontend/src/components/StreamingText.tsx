@@ -19,6 +19,7 @@ type StreamingTextProps = {
   fill?: boolean;
   followUps?: string[];
   onSelectFollowUp?: (question: string) => void;
+  onSelectClause?: (clauseId: string) => void;
   onRegenerate?: () => void;
   onDone?: () => void;
 };
@@ -143,6 +144,7 @@ export default function StreamingText({
   fill = true,
   followUps = FALLBACK_FOLLOWUPS,
   onSelectFollowUp,
+  onSelectClause,
   onRegenerate,
   onDone,
 }: StreamingTextProps) {
@@ -199,9 +201,9 @@ export default function StreamingText({
         return (
           <span
             key={idx}
-            onClick={() => setSourcesOpen(true)}
-            className="inline-citation-badge"
-            title={`View evidence source: ${citationLabel}`}
+            onClick={() => onSelectClause ? onSelectClause(citationLabel) : setSourcesOpen(true)}
+            className="inline-citation-badge cursor-pointer hover:bg-emerald-500/20 active:scale-95 transition-all"
+            title={`Click to inspect full policy clause: ${citationLabel}`}
           >
             <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-[9px] font-mono">
               §
@@ -347,19 +349,21 @@ export default function StreamingText({
               {sources.map((source, idx) => (
                 <div
                   key={source.id || idx}
-                  className="p-3 transition hover:bg-white/[0.03]"
+                  onClick={() => source.id && onSelectClause?.(source.id)}
+                  className="group/card p-3 transition hover:bg-white/[0.06] cursor-pointer rounded-xl"
+                  title="Click to inspect full verified clause"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="flex size-10 px-8 items-center justify-center rounded bg-emerald-500/20 text-[14px] font-mono font-bold text-emerald-400">
+                      <span className="flex size-10 px-8 items-center justify-center rounded bg-emerald-500/20 text-[14px] font-mono font-bold text-emerald-400 group-hover/card:bg-emerald-500/30 transition">
                         {source.id || idx + 1}
                       </span>
-                      <span className="text-xs font-semibold text-white/90">
+                      <span className="text-xs font-semibold text-white/90 group-hover/card:text-emerald-300 transition">
                         {source.label || source.part || `Source #${source.id}`}
                       </span>
                     </div>
                     {source.section && (
-                      <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50">
+                      <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-white/50 group-hover/card:bg-white/10 group-hover/card:text-white/80 transition">
                         {source.section}
                       </span>
                     )}

@@ -7,6 +7,7 @@ interface ChatViewProps {
   loading: boolean;
   starterQuestions: string[];
   onSubmitQuestion: (question: string) => void;
+  onSelectClause?: (clauseId: string) => void;
   bottomRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -15,6 +16,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
   loading,
   starterQuestions,
   onSubmitQuestion,
+  onSelectClause,
   bottomRef,
 }) => {
   return (
@@ -78,6 +80,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
                 fill
                 followUps={m.followUps}
                 onSelectFollowUp={onSubmitQuestion}
+                onSelectClause={onSelectClause}
                 onRegenerate={() => {
                   const lastUser = [...messages].reverse().find((msg) => msg.role === "user");
                   if (lastUser) onSubmitQuestion(lastUser.content);
