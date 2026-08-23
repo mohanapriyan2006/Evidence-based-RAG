@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 from app.rag.ingest import Clause, DEFAULT_MANUAL, parse_policy_manual
 
 MODEL_NAME = "all-MiniLM-L6-v2"
-TOP_K = 5
+TOP_K = 10
 MIN_SCORE = 0.25
 
 _model: SentenceTransformer | None = None

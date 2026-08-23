@@ -54,8 +54,26 @@ class AnswerTests(unittest.TestCase):
         result = generate_answer(q, verified, self.clauses)
         if verified.status == "conflict":
             self.assertEqual(result["status"], "conflict")
-            self.assertEqual(result["answer"], CONFLICT_ANSWER)
             self.assertEqual(result["reason"], "contradictory_evidence")
+            self.assertIn("Human review is required", result["answer"])
+
+    def test_known_contradiction_answer(self):
+        q = "overpayment time years"
+        verified = verify(q, retrieve(q, self.clauses))
+        result = generate_answer(q, verified, self.clauses)
+        self.assertEqual(result["status"], "conflict")
+        self.assertIn("§9.5.1", result["answer"])
+        self.assertIn("§9.5.2", result["answer"])
+        ids = {s.id for s in result["sources"]}
+        self.assertIn("§9.5.1", ids)
+        self.assertIn("§9.5.2", ids)
+
+    def test_conflict_does_not_answer(self):
+        q = "overpayment time years"
+        verified = verify(q, retrieve(q, self.clauses))
+        result = generate_answer(q, verified, self.clauses)
+        self.assertNotEqual(result["status"], "answered")
+        self.assertNotIn("Based on", result["answer"])
 
     def test_citations_preserved(self):
         q = "Who is eligible for the program?"

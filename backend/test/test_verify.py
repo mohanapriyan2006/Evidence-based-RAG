@@ -62,6 +62,16 @@ class VerifyTests(unittest.TestCase):
         result = verify(q, retrieved)
         self.assertIn(result.status, ["answered", "refused", "conflict"])
 
+    def test_known_overpayment_contradiction(self):
+        q = "overpayment time years"
+        retrieved = retrieve(q, self.clauses)
+        result = verify(q, retrieved)
+        self.assertEqual(result.status, "conflict")
+        self.assertEqual(result.reason, "contradictory_evidence")
+        ids = {c.id for c in result.evidence}
+        self.assertIn("§9.5.1", ids)
+        self.assertIn("§9.5.2", ids)
+
 
 if __name__ == "__main__":
     unittest.main()

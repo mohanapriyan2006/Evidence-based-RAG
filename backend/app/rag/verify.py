@@ -24,6 +24,8 @@ _STOPWORDS = {
 
 _NEGATORS = {"not", "no", "never", "none", "without"}
 
+_CONDITIONAL_MARKERS = {"where", "if", "except", "unless", "subject", "under", "see"}
+
 _WORD_RE = re.compile(r"[a-zA-Z']{2,}")
 
 
@@ -59,6 +61,14 @@ def _has_negation(text: str, term: str) -> bool:
     return False
 
 
+def _is_conditional(text: str) -> bool:
+    tokens = _tokenize_with_positions(text)
+    for token in tokens:
+        if token in _CONDITIONAL_MARKERS:
+            return True
+    return False
+
+
 def _tokenize_with_positions(text: str) -> list[str]:
     return _WORD_RE.findall(text.lower())
 
@@ -67,6 +77,8 @@ def _find_contradictions(clauses: list[ScoredClause]) -> list[ScoredClause]:
     conflicts: list[ScoredClause] = []
     for i in range(len(clauses)):
         for j in range(i + 1, len(clauses)):
+            if _is_conditional(clauses[i].text) or _is_conditional(clauses[j].text):
+                continue
             a_terms = _tokenize(clauses[i].text + " " + clauses[i].section)
             b_terms = _tokenize(clauses[j].text + " " + clauses[j].section)
             shared = a_terms & b_terms
@@ -101,6 +113,20 @@ def verify(question: str, clauses: list[ScoredClause]) -> VerificationResult:
             status="refused",
             reason="insufficient_evidence",
             evidence=clauses[:MIN_EVIDENCE_COUNT] if clauses else [],
+        )
+
+    conflicts = _find_contradictions(candidates)
+    if conflicts:
+        seen: set[str] = set()
+        unique = []
+        for c in conflicts:
+            if c.id not in seen:
+                seen.add(c.id)
+                unique.append(c)
+        return VerificationResult(
+            status="conflict",
+            reason="contradictory_evidence",
+            evidence=sorted(unique, key=lambda c: c.score, reverse=True),
         )
 
     strong = [

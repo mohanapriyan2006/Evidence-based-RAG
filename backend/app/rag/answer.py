@@ -60,9 +60,10 @@ def generate_answer(
         return _build_refusal(verification, all_clauses)
 
     if verification.status == "conflict":
+        ids = ", ".join(c.id for c in verification.evidence)
         return {
             "status": "conflict",
-            "answer": CONFLICT_ANSWER,
+            "answer": f"{CONFLICT_ANSWER} Human review is required to resolve the conflict between {ids}.",
             "reason": verification.reason,
             "sources": build_citations(verification.evidence),
         }
