@@ -48,13 +48,33 @@ Instead of letting vector similarity pick one clause over another based on a sli
 
 ---
 
-## 6. Why I Kept the Frontend Focused and Clean
+## 6. Where I Set the Line Between Answering and Refusing
+
+Refusing is not a fallback; it is an explicit gate in `verify.py`. I use two numeric thresholds:
+
+- `SUFFICIENT_SCORE = 0.35` — a candidate clause must beat this cosine-similarity floor or it is not even considered.
+- `COVERAGE_RATIO = 0.40` — at least 40% of the meaningful question tokens must appear in the clause text (or the clause must have a very high similarity of `0.50` or above).
+
+The decision flow is:
+
+1. If the query is empty or no clauses are retrieved → **refuse**.
+2. If the query is a known contradiction (e.g. §9.5.1 vs §9.5.2 on overpayment years) → **conflict**.
+3. If the query is overly ambiguous (single token) or asks for something outside the manual (e.g. a phone number) → **refuse**.
+4. If no candidate reaches `0.35` similarity → **refuse**.
+5. If no surviving candidate covers at least 40% of the question terms (and none exceeds `0.50` similarity) → **refuse**.
+6. Otherwise → **answer** with the strongest clause(s).
+
+Why these numbers? `0.35` is low enough to catch paraphrases but high enough to filter unrelated hits. `0.40` coverage forces the clause to actually speak to the substance of the question, not just share generic words. The `0.50` bypass exists for rare cases where the wording is so similar that it is clearly on point even if token coverage looks lower. This keeps the system from hallucinating while still allowing natural rephrases.
+
+---
+
+## 7. Why I Kept the Frontend Focused and Clean
 
 I built the React + Tailwind frontend as a clean presentation layer to showcase the backend capabilities. I avoided adding bloated features like user authentication, chat history databases, or heavy analytics dashboards. The UI directly highlights the three core response states (`answered`, `refused`, `conflict`) and allows clicking any citation to inspect full clause details.
 
 ---
 
-## 7. What I Intentionally Avoided
+## 8. What I Intentionally Avoided
 
 - **Heavy RAG frameworks (LangChain / LlamaIndex)**: I wrote the core parsing, retrieval, and verification logic in plain Python so I have 100% control over how context is verified.
 - **External Vector Databases (Pinecone / Weaviate)**: For a single policy corpus, loading embeddings into memory using `SentenceTransformers` and `numpy` dot products is faster, deterministic, and doesn't depend on cloud DB keys.

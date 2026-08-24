@@ -75,19 +75,41 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Setting Up Groq API Key
+### 2. Environment Configuration (Backend & Frontend)
 
-1. Go to [console.groq.com](https://console.groq.com) and create or sign in to your account.
-2. Navigate to **API Keys** in the dashboard and click **Create API Key**.
-3. Copy your API key string (e.g. `gsk_...`).
-4. Create a `.env` file inside the `backend/` directory:
+Copy the provided `.env.example` files to `.env` in both directories and fill in your real values.
+
+#### Backend `.env`
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env`:
 
 ```env
 GROQ_API_KEY=gsk_your_actual_api_key_here
-GROQ_MODEL=openai/gpt-oss-120b
+GROQ_MODEL=qwen/qwen3.6-27b
+FRONTEND_ORIGIN=*
 ```
 
+1. Go to [console.groq.com](https://console.groq.com) and create or sign in to your account.
+2. Navigate to **API Keys** in the dashboard and click **Create API Key**.
+3. Copy your API key string (e.g. `gsk_...`) into `GROQ_API_KEY`.
+
 > **Note**: If `GROQ_API_KEY` is not provided, the backend automatically falls back to deterministic grounded formatting, returning exact policy evidence without breaking!
+
+#### Frontend `.env`
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+Edit `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
 
 ---
 
