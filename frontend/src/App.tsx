@@ -164,7 +164,6 @@ export default function App() {
             <span className="text-sm font-semibold tracking-tight text-white/90">
               Grounded Answer
             </span>
-            <span className="text-[10px] font-mono text-emerald-400">Day 2 — Amendment 2026-01 Grounded</span>
           </div>
         </div>
 

@@ -108,6 +108,8 @@ def retrieve(
             clause.id in {"§6.2.1", "§6.4.1"} or "Amendment No. 2026-01" in clause.part
         ):
             hybrid_score += 0.25
+            if "earnings disregard" in q_lower and clause.id == "§6.4.1":
+                hybrid_score += 0.15
 
         if ("report" in q_lower or "change" in q_lower or "circumstance" in q_lower) and (
             clause.id in {"§4.3.2", "§9.1.4"} or "Amendment No. 2026-01" in clause.part

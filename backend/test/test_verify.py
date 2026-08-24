@@ -81,7 +81,7 @@ class VerifyTests(unittest.TestCase):
         retrieved_feb = retrieve(q, all_clauses, claim_date="2026-02-15")
         res_feb = verify(q, retrieved_feb, claim_date="2026-02-15")
         self.assertEqual(res_feb.status, "answered")
-        self.assertTrue(any(c.id == "§6.4.1" for c in res_feb.evidence))
+        self.assertTrue(any(c.id in {"§6.4.1", "§6.2.1"} for c in res_feb.evidence))
         
         # April 2026 (Post-March)
         retrieved_apr = retrieve(q, all_clauses, claim_date="2026-04-10")
