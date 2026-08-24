@@ -54,6 +54,8 @@ Synthesis     (Gap/No Evidence) (Both Clauses Shown)
 
 ## 🚀 Step-by-Step Setup Guide
 
+> Use two different terminals for backend and frontend.
+
 ### 1. Backend Setup & Virtual Environment (`venv`)
 
 Open your terminal in the backend directory:
