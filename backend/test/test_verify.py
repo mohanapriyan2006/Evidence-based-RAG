@@ -72,6 +72,24 @@ class VerifyTests(unittest.TestCase):
         self.assertIn("§9.5.1", ids)
         self.assertIn("§9.5.2", ids)
 
+    def test_temporal_claim_date_verification(self):
+        from app.rag.ingest import parse_all_clauses
+        all_clauses = parse_all_clauses()
+        q = "What is the monthly earnings disregard?"
+        
+        # Feb 2026 (Pre-March)
+        retrieved_feb = retrieve(q, all_clauses, claim_date="2026-02-15")
+        res_feb = verify(q, retrieved_feb, claim_date="2026-02-15")
+        self.assertEqual(res_feb.status, "answered")
+        self.assertTrue(any(c.id == "§6.4.1" for c in res_feb.evidence))
+        
+        # April 2026 (Post-March)
+        retrieved_apr = retrieve(q, all_clauses, claim_date="2026-04-10")
+        res_apr = verify(q, retrieved_apr, claim_date="2026-04-10")
+        self.assertEqual(res_apr.status, "answered")
+        self.assertTrue(any("Amendment No. 2026-01" in c.part for c in res_apr.evidence))
+
 
 if __name__ == "__main__":
     unittest.main()
+

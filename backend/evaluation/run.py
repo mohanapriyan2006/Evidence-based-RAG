@@ -1,13 +1,14 @@
 import json
 from pathlib import Path
 
-from app.rag.ingest import DEFAULT_MANUAL, parse_policy_manual
+from app.rag.ingest import parse_all_clauses
 from app.rag.answer import generate_answer
 from app.rag.retrieve import retrieve
 from app.rag.verify import verify
 
 QUESTIONS_PATH = Path(__file__).with_name("questions.json")
 RESULTS_PATH = Path(__file__).with_name("results.md")
+ROOT_EVAL_PATH = Path(__file__).parents[2] / "EVALUATION.md"
 
 
 def _matches(item, result):
@@ -23,9 +24,10 @@ def _matches(item, result):
 
 
 def _run_item(clauses, item):
-    retrieved = retrieve(item["question"], clauses)
-    verified = verify(item["question"], retrieved)
-    answer = generate_answer(item["question"], verified, clauses)
+    claim_date = item.get("claim_date")
+    retrieved = retrieve(item["question"], clauses, claim_date=claim_date)
+    verified = verify(item["question"], retrieved, claim_date=claim_date)
+    answer = generate_answer(item["question"], verified, clauses, claim_date=claim_date)
     actual_sources = [s.id for s in answer.get("sources", [])]
     result = {
         "status": answer["status"],
@@ -38,7 +40,7 @@ def _run_item(clauses, item):
 
 
 def main():
-    clauses = parse_policy_manual(DEFAULT_MANUAL)
+    clauses = parse_all_clauses()
     with open(QUESTIONS_PATH, encoding="utf-8") as f:
         questions = json.load(f)
 
@@ -53,6 +55,8 @@ def main():
             failed += 1
         lines.append(f"## {item['id']}. {item['type']}")
         lines.append(f"- Question: {item['question']}")
+        if item.get("claim_date"):
+            lines.append(f"- Claim Date: {item['claim_date']}")
         lines.append(f"- Expected: {item['expected']} {item['expected_sources']}")
         lines.append(f"- Actual: {result['status']} {result['sources']}")
         lines.append(f"- Reason: {result['reason']}")
@@ -62,8 +66,12 @@ def main():
     summary = f"Total: {len(questions)} | Passed: {passed} | Failed: {failed}"
     lines.insert(2, summary)
     lines.insert(3, "")
-    RESULTS_PATH.write_text("\n".join(lines), encoding="utf-8")
+    output_content = "\n".join(lines)
+    RESULTS_PATH.write_text(output_content, encoding="utf-8")
+    if ROOT_EVAL_PATH.parent.exists():
+        ROOT_EVAL_PATH.write_text(output_content, encoding="utf-8")
     print(summary)
+
 
 
 if __name__ == "__main__":

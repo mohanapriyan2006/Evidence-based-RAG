@@ -15,24 +15,26 @@
   },
   {
     "id": 3,
-    "type": "multi-clause",
-    "question": "How is income counted and what is disregarded?",
+    "type": "temporal-pre-march",
+    "question": "What is the monthly earnings disregard for a claim in February 2026?",
+    "claim_date": "2026-02-15",
     "expected": "answered",
-    "expected_sources": ["§6.2.1", "§6.4.1"]
+    "expected_sources": ["§6.4.1"]
   },
   {
     "id": 4,
-    "type": "multi-clause",
-    "question": "What are the time limits for making and determining an application?",
+    "type": "temporal-post-march",
+    "question": "What is the monthly earnings disregard for a claim in April 2026?",
+    "claim_date": "2026-04-10",
     "expected": "answered",
-    "expected_sources": ["§8.3.1", "§8.3.2"]
+    "expected_sources": ["§1.1 (Amendment No. 2026-01)"]
   },
   {
     "id": 5,
-    "type": "paraphrased",
-    "question": "What basic conditions must a person meet to qualify for assistance?",
+    "type": "multi-clause",
+    "question": "What are the time limits for making and determining an application?",
     "expected": "answered",
-    "expected_sources": ["§2.1.1"]
+    "expected_sources": ["§8.3.1"]
   },
   {
     "id": 6,

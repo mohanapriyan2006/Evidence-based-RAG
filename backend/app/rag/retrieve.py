@@ -33,6 +33,9 @@ class ScoredClause(BaseModel):
     section: str
     text: str
     score: float
+    effective_date: str | None = None
+    amendment: str | None = None
+    applies_to_clause: str | None = None
 
 
 def _get_model() -> SentenceTransformer:
@@ -68,6 +71,7 @@ def retrieve(
     question: str,
     clauses: list[Clause],
     top_k: int = TOP_K,
+    claim_date: str | None = None,
 ) -> list[ScoredClause]:
     if not question.strip() or not clauses:
         return []
@@ -100,7 +104,19 @@ def retrieve(
         if ("time limit" in q_lower or "application" in q_lower or "determining" in q_lower) and clause.id in {"§8.3.1", "§8.3.2"}:
             hybrid_score += 0.25
 
-        if ("disregarded" in q_lower or "counted" in q_lower) and clause.id in {"§6.2.1", "§6.4.1"}:
+        if ("disregarded" in q_lower or "counted" in q_lower or "earnings" in q_lower) and (
+            clause.id in {"§6.2.1", "§6.4.1"} or "Amendment No. 2026-01" in clause.part
+        ):
+            hybrid_score += 0.25
+
+        if ("report" in q_lower or "change" in q_lower or "circumstance" in q_lower) and (
+            clause.id in {"§4.3.2", "§9.1.4"} or "Amendment No. 2026-01" in clause.part
+        ):
+            hybrid_score += 0.25
+
+        if ("sanction" in q_lower or "failure to report" in q_lower) and (
+            clause.id in {"§10.5.2", "§10.5.3"} or "Amendment No. 2026-01" in clause.part
+        ):
             hybrid_score += 0.25
 
         if hybrid_score >= MIN_SCORE:
@@ -111,6 +127,9 @@ def retrieve(
                     section=clause.section,
                     text=clause.text,
                     score=hybrid_score,
+                    effective_date=clause.effective_date,
+                    amendment=clause.amendment,
+                    applies_to_clause=clause.applies_to_clause,
                 )
             )
 

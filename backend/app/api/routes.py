@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 from app.models.schemas import QuestionRequest, AskResponse
-from app.rag.ingest import DEFAULT_MANUAL, parse_policy_manual
+from app.rag.ingest import parse_all_clauses
 from app.rag.answer import GroqError, generate_answer
 from app.rag.retrieve import retrieve
 from app.rag.verify import verify
 
 
-CLAUSES = parse_policy_manual(DEFAULT_MANUAL)
+CLAUSES = parse_all_clauses()
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ def health():
 @router.get("/sources/{clause_id}")
 def get_source(clause_id: str):
     cid = clause_id if clause_id.startswith("§") else f"§{clause_id}"
-    clause = next((c for c in CLAUSES if c.id == cid), None)
+    clause = next((c for c in CLAUSES if c.id == cid or c.id.startswith(f"{cid} ")), None)
     if not clause:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clause not found")
     return clause
@@ -31,9 +31,9 @@ def ask(request: QuestionRequest):
     if not question:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Question cannot be empty")
     try:
-        retrieved = retrieve(question, CLAUSES)
-        verified = verify(question, retrieved)
-        result = generate_answer(question, verified, CLAUSES)
+        retrieved = retrieve(question, CLAUSES, claim_date=request.claim_date)
+        verified = verify(question, retrieved, claim_date=request.claim_date)
+        result = generate_answer(question, verified, CLAUSES, claim_date=request.claim_date)
     except GroqError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
     except Exception as exc:
@@ -42,5 +42,7 @@ def ask(request: QuestionRequest):
         status=result["status"],
         answer=result["answer"],
         sources=result["sources"],
+        claim_date=result.get("claim_date"),
     )
+
 

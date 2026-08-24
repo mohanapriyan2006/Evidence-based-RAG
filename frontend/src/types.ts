@@ -9,6 +9,7 @@ export interface AskResponse {
   status: 'answered' | 'refused' | 'conflict'
   answer: string
   sources: Citation[]
+  claim_date?: string
 }
 
 export interface Message {
@@ -18,6 +19,7 @@ export interface Message {
   status?: "answered" | "refused" | "conflict" | "error";
   sources?: Citation[];
   followUps?: string[];
+  claim_date?: string;
 }
 
 export interface QuickAction {

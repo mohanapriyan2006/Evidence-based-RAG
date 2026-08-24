@@ -50,6 +50,14 @@ class IngestTests(unittest.TestCase):
             p.write_text("", encoding="utf-8")
             self.assertEqual(parse_policy_manual(p), [])
 
+    def test_parse_amendment(self):
+        from app.rag.ingest import parse_amendment, parse_all_clauses
+        amend_clauses = parse_amendment()
+        self.assertGreater(len(amend_clauses), 0)
+        all_clauses = parse_all_clauses()
+        self.assertGreater(len(all_clauses), len(parse_policy_manual(DEFAULT_MANUAL)))
+
 
 if __name__ == "__main__":
     unittest.main()
+

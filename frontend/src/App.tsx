@@ -7,11 +7,44 @@ import ClauseModal from "./components/ClauseModal";
 
 const STARTER_QUESTIONS = [
   "Who is eligible for the program?",
-  "What documents are required for proof of income?",
-  "When can an application be refused or delayed?",
+  "What is the monthly earnings disregard for a claim in February 2026 vs April 2026?",
+  "How many days to report a change of circumstances?",
 ];
 
 const QUICK_ACTIONS: QuickAction[] = [
+  {
+    label: "Earnings Disregard (Pre-March)",
+    desc: "February 2026 claim ($120/mo)",
+    prompt: "What is the monthly earnings disregard for a claim dated February 2026?",
+    icon: (
+      <svg className="size-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+  },
+  {
+    label: "Earnings Disregard (Post-March)",
+    desc: "April 2026 claim ($175/mo)",
+    prompt: "What is the monthly earnings disregard for a claim dated April 2026?",
+    icon: (
+      <svg className="size-4 shrink-0 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    ),
+  },
+  {
+    label: "Reporting Changes Deadline",
+    desc: "10 days (Pre-March) vs 14 days (Post-March)",
+    prompt: "How many calendar days do I have to report a change of circumstances?",
+    icon: (
+      <svg className="size-4 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    ),
+  },
   {
     label: "Countable Income Definition",
     desc: "Earned vs unearned rules",
@@ -24,45 +57,9 @@ const QUICK_ACTIONS: QuickAction[] = [
     ),
   },
   {
-    label: "Policy Refusal Criteria",
-    desc: "Denial grounds & non-compliance",
-    prompt: "Which policy sections cover refusal criteria?",
-    icon: (
-      <svg className="size-4 shrink-0 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
-    ),
-  },
-  {
-    label: "Overpayment Recovery Rules",
-    desc: "6-year recovery & conflict check",
-    prompt: "Can an overpayment be recovered after six years?",
-    icon: (
-      <svg className="size-4 shrink-0 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
-    ),
-  },
-  {
-    label: "Proof of Income Docs",
-    desc: "Required documentation list",
-    prompt: "What documents are required for proof of income?",
-    icon: (
-      <svg className="size-4 shrink-0 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-      </svg>
-    ),
-  },
-  {
     label: "Identify Contradictions",
     desc: "Detect conflicting policy clauses",
-    prompt: "Identify any contradictory provisions or conflicting clauses in the policy.",
+    prompt: "Can an overpayment be recovered after six years?",
     icon: (
       <svg className="size-4 shrink-0 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -71,9 +68,9 @@ const QUICK_ACTIONS: QuickAction[] = [
     ),
   },
   {
-    label: "Appeals & Disputes Process",
-    desc: "How to challenge a denial decision",
-    prompt: "What is the procedure for appealing a denied application?",
+    label: "Policy Refusal Criteria",
+    desc: "Unanswerable & evidence gaps",
+    prompt: "What is the department's phone number?",
     icon: (
       <svg className="size-4 shrink-0 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -88,6 +85,7 @@ export default function App() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedClauseId, setSelectedClauseId] = useState<string | null>(null);
+  const [claimDate, setClaimDate] = useState<string>("2026-04-01");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -107,17 +105,16 @@ export default function App() {
       textareaRef.current.style.height = "auto";
     }
 
-    setMessages((prev) => [...prev, { id: makeId(), role: "user", content: q }]);
+    setMessages((prev) => [...prev, { id: makeId(), role: "user", content: q, claim_date: claimDate }]);
     setLoading(true);
 
     try {
-      const data = await askQuestion(q);
+      const data = await askQuestion(q, claimDate);
       
-      // Dynamic follow-ups generation based on response context
       const dynamicFollowUps = [
         `What specific clauses govern ${q.split(" ").slice(-2).join(" ")}?`,
-        "Are there any exceptions or policy overrides?",
-        "How can I submit an appeal if denied?",
+        "How does Amendment No. 2026-01 alter this rule?",
+        "Are there transitional provisions under §5.1 - §5.3?",
       ];
 
       setMessages((prev) => [
@@ -129,6 +126,7 @@ export default function App() {
           status: data.status,
           sources: data.sources,
           followUps: dynamicFollowUps,
+          claim_date: data.claim_date || claimDate,
         },
       ]);
     } catch (err) {
@@ -166,10 +164,23 @@ export default function App() {
             <span className="text-sm font-semibold tracking-tight text-white/90">
               Grounded Answer
             </span>
+            <span className="text-[10px] font-mono text-emerald-400">Day 2 — Amendment 2026-01 Grounded</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-white/80">
+            <span className="text-[11px] text-white/50">Date of Claim:</span>
+            <select
+              value={claimDate}
+              onChange={(e) => setClaimDate(e.target.value)}
+              className="bg-transparent font-medium text-emerald-400 focus:outline-none cursor-pointer"
+            >
+              <option value="2026-04-01" className="bg-[#1e1e20] text-white">Post-March 2026 (Amendment 2026-01)</option>
+              <option value="2026-02-15" className="bg-[#1e1e20] text-white">Pre-March 2026 (Feb 2026 Claim)</option>
+            </select>
+          </div>
+
           <button
             type="button"
             onClick={handleNewChat}

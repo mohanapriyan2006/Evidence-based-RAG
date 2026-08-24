@@ -2,10 +2,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.rag.ingest import DEFAULT_MANUAL, parse_policy_manual
+from app.rag.ingest import parse_all_clauses
 from app.rag.answer import generate_answer
 from app.rag.retrieve import retrieve
 from app.rag.verify import verify
+
 
 
 def _print_sources(sources):
@@ -33,8 +34,8 @@ def _run(clauses, question):
 
 
 def main():
-    clauses = parse_policy_manual(DEFAULT_MANUAL)
-    print("Grounded policy QA CLI")
+    clauses = parse_all_clauses()
+    print("Grounded policy QA CLI (Temporal & Amendment Grounded)")
     print("Type 'exit' or press Ctrl-C to quit.\n")
     while True:
         try:

@@ -39,12 +39,16 @@ def _format_answer(question: str, evidence: list[Citation]) -> str:
     return " ".join(parts)
 
 
-def _build_prompt(question: str, evidence: list[Citation]) -> str:
-    lines = ["Question:", question, "", "Verified policy evidence:"]
+def _build_prompt(question: str, evidence: list[Citation], claim_date: str | None = None) -> str:
+    lines = ["Question:", question]
+    if claim_date:
+        lines.append(f"Claim Date: {claim_date}")
+    lines.extend(["", "Verified policy evidence:"])
     for c in evidence:
         lines.append(f"{c.id}: {c.text}")
     lines.append("")
     lines.append("Answer the question using only the provided policy evidence.")
+    lines.append("Ensure the answer is correct for the date of the claim being asked about (accounting for Amendment No. 2026-01 effective 1 March 2026).")
     lines.append("Do not use outside knowledge.")
     lines.append("Do not invent missing information.")
     lines.append("Do not create or modify policy citations.")
@@ -52,7 +56,7 @@ def _build_prompt(question: str, evidence: list[Citation]) -> str:
     return "\n".join(lines)
 
 
-def _call_groq(question: str, evidence: list[Citation]) -> str | None:
+def _call_groq(question: str, evidence: list[Citation], claim_date: str | None = None) -> str | None:
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         return None
@@ -66,7 +70,7 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
     body = {
         "model": model,
         "messages": [
-            {"role": "user", "content": _build_prompt(question, evidence)},
+            {"role": "user", "content": _build_prompt(question, evidence, claim_date)},
         ],
         "temperature": 0.2,
         "max_completion_tokens": 1024,
@@ -81,7 +85,7 @@ def _call_groq(question: str, evidence: list[Citation]) -> str | None:
             result = json.loads(response.read().decode("utf-8"))
             raw_content = result["choices"][0]["message"]["content"]
             return _clean_think_tags(raw_content)
-    except Exception as exc:
+    except Exception:
         return None
 
 
@@ -124,9 +128,12 @@ def generate_answer(
     question: str,
     verification: VerificationResult,
     all_clauses: list[ScoredClause] | None = None,
+    claim_date: str | None = None,
 ) -> dict:
     if verification.status == "refused":
-        return _build_refusal(verification, all_clauses)
+        res = _build_refusal(verification, all_clauses)
+        res["claim_date"] = claim_date
+        return res
 
     if verification.status == "conflict":
         ids = ", ".join(c.id for c in verification.evidence)
@@ -135,12 +142,13 @@ def generate_answer(
             "answer": f"{CONFLICT_ANSWER} Human review is required to resolve the conflict between {ids}.",
             "reason": verification.reason,
             "sources": build_citations(verification.evidence),
+            "claim_date": claim_date,
         }
 
     sources = build_citations(verification.evidence)
     answer = None
     try:
-        answer = _call_groq(question, sources)
+        answer = _call_groq(question, sources, claim_date)
     except Exception:
         answer = None
 
@@ -155,4 +163,6 @@ def generate_answer(
         "answer": answer,
         "reason": verification.reason,
         "sources": sources,
+        "claim_date": claim_date,
     }
+

@@ -40,6 +40,17 @@ class APITests(unittest.TestCase):
         self.assertIn(data["status"], ["answered", "refused", "conflict"])
         self.assertIn("sources", data)
 
+    def test_ask_question_with_claim_date(self):
+        response = self.client.post("/ask", json={
+            "question": "What is the monthly earnings disregard?",
+            "claim_date": "2026-04-01"
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "answered")
+        self.assertEqual(data.get("claim_date"), "2026-04-01")
+
 
 if __name__ == "__main__":
     unittest.main()
+

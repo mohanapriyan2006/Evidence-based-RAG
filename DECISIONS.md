@@ -79,3 +79,31 @@ I built the React + Tailwind frontend as a clean presentation layer to showcase 
 - **Heavy RAG frameworks (LangChain / LlamaIndex)**: I wrote the core parsing, retrieval, and verification logic in plain Python so I have 100% control over how context is verified.
 - **External Vector Databases (Pinecone / Weaviate)**: For a single policy corpus, loading embeddings into memory using `SentenceTransformers` and `numpy` dot products is faster, deterministic, and doesn't depend on cloud DB keys.
 - **Silent LLM resolutions**: Never letting the model decide if evidence is valid — my backend code makes all verification and status decisions deterministically.
+
+---
+
+## 9. Day 2 Requirement: Amendment No. 2026-01 & Temporal Grounding
+
+When Amendment No. 2026-01 was issued (taking effect 1 March 2026), the requirements expanded from static QA to **temporal claim-date grounded QA**. Answers must be correct for the specific date of the claim being asked about.
+
+### What I Changed:
+1. **Multi-Source Clause Ingestion (`app/rag/ingest.py`)**:
+   - Added parsing for `Amendment No. 2026-01.md` alongside `policy-manual.md`.
+   - Enhanced the `Clause` schema with `effective_date` ("2026-03-01"), `amendment` ("Amendment No. 2026-01"), and `applies_to_clause` target metadata (e.g. mapping §1.1 to §6.4.1).
+2. **Temporal Retrieval & Date Extraction (`app/rag/retrieve.py` & `app/rag/verify.py`)**:
+   - Extended `QuestionRequest` schema and `retrieve()` / `verify()` / `generate_answer()` functions to accept an optional `claim_date` parameter (e.g. `2026-02-15` vs `2026-04-10`).
+   - Implemented automatic date extraction from query strings (e.g., detecting "February 2026" vs "April 2026" or "before March 1" vs "after March 1").
+3. **Transitional Rule Engine (§5.1, §5.2, §5.3)**:
+   - For claims **before 1 March 2026**: enforced pre-amendment figures ($120/month earnings disregard under §6.4.1; 10 calendar days reporting under §4.3.2; 20% sanction under §10.5.2).
+   - For claims **on or after 1 March 2026**: enforced Amendment No. 2026-01 figures ($175/month earnings disregard under §1.1; 14 calendar days reporting under §2.1; 15% sanction under §4.1; §10.5.3A sanction exception for reporting failures where change increases award).
+   - Handled §5.2 transitional provision (reporting period based on date change occurred).
+4. **UI Date Selector**:
+   - Added a "Date of Claim" control bar dropdown in the header and claim-date metadata indicators on answer cards.
+
+### What I Chose NOT to Change:
+- **Separated Verification Pipeline**: Kept deterministic verification (`verify.py`) instead of relying on the LLM to perform temporal logic reasoning.
+- **Core API Contracts**: Preserved `/ask`, `/health`, and `/sources/{clause_id}` endpoints, adding `claim_date` as an optional parameter to maintain backward compatibility.
+
+### What I Would Have Done Differently Had I Known This Was Coming:
+- **Versioned Clause Schema from Day 1**: If I had known policy amendments would land on Day 2, I would have structured every clause with explicit `valid_from` and `valid_to` date ranges from day one, rather than retrofitting effective dates onto single-version text structures. This would make future amendments plug-and-play with zero code changes.
+

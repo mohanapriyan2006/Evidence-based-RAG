@@ -200,5 +200,15 @@ Below is the model limits table for available Groq models:
 ## 📌 API Endpoints Summary
 
 - `GET /health`: Health check endpoint (`{"status": "ok"}`).
-- `POST /ask`: Primary question answering endpoint (`{"question": "..."}`). Returns `status` (`answered`, `refused`, `conflict`), `answer`, and verified `sources`.
+- `POST /ask`: Primary question answering endpoint (`{"question": "...", "claim_date": "2026-04-01"}`). Returns `status` (`answered`, `refused`, `conflict`), `answer`, `sources`, and `claim_date`.
 - `GET /sources/{clause_id}`: Direct clause lookup endpoint (e.g. `/sources/§2.1.1`), returning full clause details.
+
+---
+
+## 📅 Day 2 Requirement: Temporal Claim-Date Grounding & Amendment No. 2026-01
+
+With the issuance of **Amendment No. 2026-01** (effective 1 March 2026), the system automatically enforces temporal policy validity:
+- **Pre-March 1, 2026 Claims**: Enforces consolidated 2025 policy manual ($120/month earnings disregard §6.4.1; 10 calendar days reporting deadline §4.3.2; 20% sanction §10.5.2).
+- **Post-March 1, 2026 Claims**: Enforces Amendment No. 2026-01 ($175/month earnings disregard §1.1; 14 calendar days reporting deadline §2.1; 15% sanction §4.1; §10.5.3A sanction exception).
+- **Transitional Provisions (§5.1 - §5.3)**: Correctly processes determinations and changes of circumstances occurring across effective date boundaries.
+
